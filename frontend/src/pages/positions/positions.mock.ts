@@ -32,4 +32,12 @@ export const initialPositions: PositionListItem[] = [
     createdAt: "2026-07-08",
     updatedAt: "2026-07-16",
   },
+  {
+    id: "ux-designer",
+    name: "UX Designer",
+    description: "Product design position focused on clear and reusable web interfaces.",
+    tags: ["Figma", "Research"],
+    createdAt: "2026-07-15",
+    updatedAt: "2026-07-20",
+  },
 ];

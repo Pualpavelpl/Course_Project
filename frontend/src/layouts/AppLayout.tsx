@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { Button, Navbar, Offcanvas } from "react-bootstrap";
 import { Outlet } from "react-router-dom";
-import { recruiterNavigation } from "../config/recruiterNavigation";
+import type { NavigationItem } from "../config/navigation";
 import { SidebarNavigation } from "../shared/ui/SidebarNavigation";
 
-export function AppLayout() {
+interface AppLayoutProps {
+  accountLabel: string;
+  navigationItems: NavigationItem[];
+}
+
+export function AppLayout({ accountLabel, navigationItems }: AppLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = (
     <SidebarNavigation
-      items={recruiterNavigation}
+      items={navigationItems}
       onNavigate={() => setMobileMenuOpen(false)}
     />
   );
@@ -50,7 +55,7 @@ export function AppLayout() {
         placement="start"
       >
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Recruiter</Offcanvas.Title>
+          <Offcanvas.Title>{accountLabel}</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body className="p-0">{navigation}</Offcanvas.Body>
       </Offcanvas>

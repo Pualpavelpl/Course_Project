@@ -1,7 +1,4 @@
-export interface NavigationItem {
-  label: string;
-  path: string;
-}
+import type { NavigationItem } from "./navigation";
 
 export const recruiterNavigation: NavigationItem[] = [
   {
