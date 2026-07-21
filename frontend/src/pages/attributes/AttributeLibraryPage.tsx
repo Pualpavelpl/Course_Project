@@ -1,6 +1,11 @@
-import { EntityListPage, type FilterOption } from "../../shared/ui/EntityListPage";
+import type { FilterOption } from "../../shared/hooks/useTableControls";
 import type { TableColumn } from "../../shared/ui/DataTable";
-import { initialAttributes, type AttributeListItem } from "./attributes.mock";
+import { EntityListPage } from "../../shared/ui/EntityListPage";
+import {
+  attributeCategories,
+  initialAttributes,
+  type AttributeListItem,
+} from "./attributes.mock";
 
 const columns: TableColumn<AttributeListItem>[] = [
   { key: "name", header: "Name", render: (attribute) => attribute.name },
@@ -9,12 +14,12 @@ const columns: TableColumn<AttributeListItem>[] = [
     header: "Description",
     render: (attribute) => attribute.description,
   },
+  { key: "category", header: "Category", render: (attribute) => attribute.category },
   { key: "createdAt", header: "Created", render: (attribute) => attribute.createdAt },
   { key: "updatedAt", header: "Updated", render: (attribute) => attribute.updatedAt },
 ];
 
-const categories = ["Personal Information", "Certification", "Soft Skills"] as const;
-const filters: FilterOption<AttributeListItem>[] = categories.map((category) => ({
+const filters: FilterOption<AttributeListItem>[] = attributeCategories.map((category) => ({
   label: category,
   matches: (attribute) => attribute.category === category,
 }));

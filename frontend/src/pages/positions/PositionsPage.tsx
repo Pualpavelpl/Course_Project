@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { EntityListPage, type FilterOption } from "../../shared/ui/EntityListPage";
+import type { FilterOption } from "../../shared/hooks/useTableControls";
 import type { TableColumn } from "../../shared/ui/DataTable";
+import { EntityListPage } from "../../shared/ui/EntityListPage";
 import { initialPositions, type PositionListItem } from "./positions.mock";
 
 const columns: TableColumn<PositionListItem>[] = [

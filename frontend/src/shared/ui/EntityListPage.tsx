@@ -1,13 +1,10 @@
 import { useState } from "react";
-import { Button, Dropdown, Form } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { type FilterOption, useTableControls } from "../hooks/useTableControls";
 import { DataTable, type TableColumn } from "./DataTable";
+import { ListToolbar } from "./ListToolbar";
 import { PageHeader } from "./PageHeader";
-
-export interface FilterOption<Row> {
-  label: string;
-  matches: (row: Row) => boolean;
-}
 
 interface EntityListPageProps<Row extends { id: string }> {
   title: string;
@@ -36,18 +33,9 @@ export function EntityListPage<Row extends { id: string }>({
 }: EntityListPageProps<Row>) {
   const navigate = useNavigate();
   const [rows, setRows] = useState(initialRows);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [search, setSearch] = useState("");
-  const [filterIndex, setFilterIndex] = useState<number>();
+  const controls = useTableControls(rows, getSearchText, filterOptions);
+  const { selectedIds, setSelectedIds } = controls;
   const selectedId = selectedIds.size === 1 ? [...selectedIds][0] : undefined;
-
-  const query = search.trim().toLowerCase();
-  const filter = filterIndex === undefined ? undefined : filterOptions[filterIndex];
-  const visibleRows = rows.filter(
-    (row) =>
-      getSearchText(row).toLowerCase().includes(query) &&
-      (!filter || filter.matches(row)),
-  );
 
   const deleteSelected = () => {
     if (!selectedId) return;
@@ -71,35 +59,17 @@ export function EntityListPage<Row extends { id: string }>({
         }
       />
 
-      <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
-        <div className="d-flex flex-column flex-sm-row gap-2">
-          <Dropdown>
-            <Dropdown.Toggle variant="outline-secondary">Filter</Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item active={filterIndex === undefined} onClick={() => setFilterIndex(undefined)}>
-                All
-              </Dropdown.Item>
-              {filterOptions.map((option, index) => (
-                <Dropdown.Item
-                  key={option.label}
-                  active={filterIndex === index}
-                  onClick={() => setFilterIndex(index)}
-                >
-                  {option.label}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-          <Form.Control
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search"
-            aria-label={`Search ${title}`}
-            className="search-control"
-          />
-        </div>
-
-        <div className="d-flex gap-2">
+      <ListToolbar
+        search={controls.search}
+        onSearchChange={controls.setSearch}
+        searchLabel={`Search ${title}`}
+        filter={{
+          labels: filterOptions.map((option) => option.label),
+          index: controls.filterIndex,
+          onChange: controls.setFilterIndex,
+        }}
+        actions={
+          <>
           <Button
             variant="outline-secondary"
             disabled={!selectedId}
@@ -110,11 +80,12 @@ export function EntityListPage<Row extends { id: string }>({
           <Button variant="outline-danger" disabled={!selectedId} onClick={deleteSelected}>
             Delete
           </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <DataTable
-        rows={visibleRows}
+        rows={controls.visibleRows}
         columns={columns}
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
