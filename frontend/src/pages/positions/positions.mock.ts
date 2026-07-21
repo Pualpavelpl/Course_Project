@@ -1,6 +1,8 @@
 export interface PositionListItem {
   id: string;
-  title: string;
+  name: string;
+  description: string;
+  tags: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -8,19 +10,25 @@ export interface PositionListItem {
 export const initialPositions: PositionListItem[] = [
   {
     id: "frontend-developer",
-    title: "Frontend Developer",
+    name: "Frontend Developer",
+    description: "Frontend position based on reusable candidate attributes.",
+    tags: ["React", "TypeScript"],
     createdAt: "2026-07-12",
     updatedAt: "2026-07-19",
   },
   {
     id: "backend-developer",
-    title: "Backend Developer",
+    name: "Backend Developer",
+    description: "Backend position for Node.js and database experience.",
+    tags: ["Node.js", "PostgreSQL"],
     createdAt: "2026-07-10",
     updatedAt: "2026-07-18",
   },
   {
     id: "qa-engineer",
-    title: "QA Engineer",
+    name: "QA Engineer",
+    description: "Quality assurance position for web applications.",
+    tags: ["Testing", "Web"],
     createdAt: "2026-07-08",
     updatedAt: "2026-07-16",
   },
