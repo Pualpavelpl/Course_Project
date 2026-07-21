@@ -1,28 +1,37 @@
-import { useState, useEffect } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { AppLayout } from "./layouts/AppLayout";
+import { LoginPage } from "./pages/auth/LoginPage";
+import { PositionsPage } from "./pages/positions/PositionsPage";
+import { PlaceholderPage } from "./shared/ui/PlaceholderPage";
 
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<LoginPage />} />
 
-function App(){
-  const API_URL = import.meta.env.VITE_API_URL;
-  const [message, setMessage] = useState('Loading...');
-  useEffect(() => {
-    fetch(`${API_URL}/api/hello`)
-      .then((response) => {
-       return response.json();
-    })
-      .then((data) =>{
-       setMessage(data.message)
-    })
-    .catch(() =>{
-      setMessage("Backend connection error");
-    })
+      <Route path="/recruiter" element={<AppLayout />}>
+        <Route index element={<Navigate to="positions" replace />} />
+        <Route path="positions" element={<PositionsPage />} />
+        <Route
+          path="positions/new"
+          element={<PlaceholderPage title="Create position" />}
+        />
+        <Route
+          path="positions/:positionId/edit"
+          element={<PlaceholderPage title="Edit position" />}
+        />
+        <Route
+          path="attributes"
+          element={<PlaceholderPage title="Attribute library" />}
+        />
+        <Route
+          path="cv-search"
+          element={<PlaceholderPage title="CV search" />}
+        />
+      </Route>
 
-  },[])
-
-return (
-  <main>
-    <h1>Course Project</h1>
-    <p>{message}</p>
-  </main>
-);
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
 }
-export default App;

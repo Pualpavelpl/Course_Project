@@ -1,15 +1,45 @@
-* {
-  box-sizing: border-box;
+html,
+body,
+#root {
+  min-height: 100dvh;
 }
 
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
+  background: #f8f9fa;
 }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
+.app-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-sidebar {
+  width: 220px;
+  flex: 0 0 220px;
+}
+
+.login-layout {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1.5rem;
+}
+
+.login-card {
+  max-width: 500px;
+}
+
+.search-control {
+  max-width: 320px;
+}
+
+.selection-column {
+  width: 48px;
+}
+
+@media (max-width: 575.98px) {
+  .search-control {
+    max-width: none;
+  }
 }
