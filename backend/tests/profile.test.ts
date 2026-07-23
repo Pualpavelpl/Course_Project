@@ -153,7 +153,11 @@ describe("Candidate Profile API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.version).toBe(1);
-    expect(response.body.meAttributes).toEqual([]);
+    expect(
+      response.body.meAttributes.map(
+        ({ name }: { name: string }) => name,
+      ),
+    ).toEqual(["First Name", "Last Name", "Location"]);
     expect(response.body.infoAttributes).toEqual([]);
     expect(recruiterResponse.status).toBe(403);
   });
@@ -240,7 +244,9 @@ describe("Candidate Profile API", () => {
   });
 
   it("batch-updates values with one Profile version change", async () => {
-    const first = await createAttribute("Name", "STRING", true);
+    const first = await getPrismaClient().attribute.findUniqueOrThrow({
+      where: { name: "First Name" },
+    });
     const second = await createAttribute("Certified", "BOOLEAN");
 
     const response = await request(app)
@@ -256,12 +262,14 @@ describe("Candidate Profile API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.version).toBe(2);
-    expect(response.body.meAttributes).toHaveLength(1);
+    expect(response.body.meAttributes).toHaveLength(3);
     expect(response.body.infoAttributes).toHaveLength(1);
   });
 
   it("does not delete built-in values and deletes Info values", async () => {
-    const builtin = await createAttribute("Full name", "STRING", true);
+    const builtin = await getPrismaClient().attribute.findUniqueOrThrow({
+      where: { name: "First Name" },
+    });
     const info = await createAttribute("Skill", "STRING");
     await request(app)
       .patch("/api/profile/me")

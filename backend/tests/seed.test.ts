@@ -47,7 +47,7 @@ describe("demo seed", () => {
     });
 
     expect(firstCounts).toEqual({
-      attributes: 5,
+      attributes: 6,
       positions: 5,
       candidates: 5,
       projects: 5,
@@ -58,7 +58,7 @@ describe("demo seed", () => {
     expect(
       candidates.every(
         ({ profile }) =>
-          profile?.profileAttributes.length === 5 &&
+          profile?.profileAttributes.length === 6 &&
           profile.projects.length === 1 &&
           profile.cvs.length === 1,
       ),

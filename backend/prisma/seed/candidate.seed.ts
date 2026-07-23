@@ -97,8 +97,11 @@ export async function seedProfileAttributes(
         candidateRecord,
         profilesByCandidateId,
       );
+      const [firstName = "", ...lastNameParts] =
+        candidate.fullName.split(" ");
       const valueByAttributeName = new Map([
-        ["Full name", candidate.fullName],
+        ["First Name", firstName],
+        ["Last Name", lastNameParts.join(" ")],
         ["Location", candidate.location],
         [
           "Years of professional experience",

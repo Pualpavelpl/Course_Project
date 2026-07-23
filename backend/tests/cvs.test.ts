@@ -314,7 +314,7 @@ describe("Dynamic CV assembly", () => {
       getPrismaClient().profileAttribute.count({
         where: { profileId: profileResponse.body.id as string },
       }),
-    ).resolves.toBe(1);
+    ).resolves.toBe(4);
   });
 
   it("rejects saving an Attribute outside the Position template", async () => {

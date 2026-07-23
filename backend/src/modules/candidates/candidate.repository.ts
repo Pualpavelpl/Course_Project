@@ -2,6 +2,10 @@ import {
   Prisma,
 } from "../../generated/prisma/client.js";
 import { getPrismaClient } from "../../lib/prisma.js";
+import {
+  requiredProfileAttributeNames,
+  requiredProfileAttributes,
+} from "../profiles/required-profile-attributes.js";
 
 const candidateCredentialsSelect = {
   id: true,
@@ -57,13 +61,42 @@ export async function createCandidateWithProfile(
 ) {
   try {
     const candidate = await getPrismaClient().$transaction(
-      async (transaction) =>
-        transaction.candidate.create({
+      async (transaction) => {
+        await transaction.attribute.createMany({
+          data: [...requiredProfileAttributes],
+          skipDuplicates: true,
+        });
+        await transaction.attribute.updateMany({
+          where: { name: { in: requiredProfileAttributeNames } },
+          data: {
+            type: "STRING",
+            category: "PERSONAL_INFORMATION",
+            isBuiltin: true,
+          },
+        });
+        const requiredAttributes = await transaction.attribute.findMany({
+          where: { name: { in: requiredProfileAttributeNames } },
+          select: { id: true },
+        });
+
+        if (requiredAttributes.length !== requiredProfileAttributes.length) {
+          throw new Error("Required Profile Attributes are unavailable");
+        }
+
+        return transaction.candidate.create({
           data: {
             email,
             passwordHash,
             profile: {
-              create: {},
+              create: {
+                profileAttributes: {
+                  createMany: {
+                    data: requiredAttributes.map(({ id }) => ({
+                      attributeId: id,
+                    })),
+                  },
+                },
+              },
             },
           },
           select: {
@@ -75,7 +108,8 @@ export async function createCandidateWithProfile(
               },
             },
           },
-        }),
+        });
+      },
     );
 
     return {

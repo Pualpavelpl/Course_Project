@@ -41,8 +41,16 @@ interface DemoCandidate {
 
 export const demoAttributes: DemoAttribute[] = [
   {
-    name: "Full name",
-    description: "Candidate name shown in the CV header",
+    name: "First Name",
+    description: "Candidate first name",
+    type: "STRING",
+    category: "PERSONAL_INFORMATION",
+    isBuiltin: true,
+    options: [],
+  },
+  {
+    name: "Last Name",
+    description: "Candidate last name",
     type: "STRING",
     category: "PERSONAL_INFORMATION",
     isBuiltin: true,
@@ -53,7 +61,7 @@ export const demoAttributes: DemoAttribute[] = [
     description: "Candidate city and country",
     type: "STRING",
     category: "PERSONAL_INFORMATION",
-    isBuiltin: false,
+    isBuiltin: true,
     options: [],
   },
   {

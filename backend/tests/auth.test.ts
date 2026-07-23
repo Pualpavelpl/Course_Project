@@ -66,7 +66,17 @@ describe("Candidate registration", () => {
       where: { email: candidateCredentials.email },
       select: {
         profile: {
-          select: { id: true },
+          select: {
+            id: true,
+            profileAttributes: {
+              select: {
+                attribute: {
+                  select: { name: true },
+                },
+              },
+              orderBy: { attribute: { name: "asc" } },
+            },
+          },
         },
       },
     });
@@ -78,6 +88,11 @@ describe("Candidate registration", () => {
     });
     expect(response.body.token).toEqual(expect.any(String));
     expect(storedCandidate?.profile?.id).toEqual(expect.any(String));
+    expect(
+      storedCandidate?.profile?.profileAttributes.map(
+        ({ attribute }) => attribute.name,
+      ),
+    ).toEqual(["First Name", "Last Name", "Location"]);
     expectNoPasswordData(response.body);
   });
 
