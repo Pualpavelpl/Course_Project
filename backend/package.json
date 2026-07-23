@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "lint": "oxlint src tests vitest.config.ts -D suspicious --vitest-plugin --promise-plugin --node-plugin --deny-warnings",
+    "lint": "oxlint src tests prisma vitest.config.ts -D suspicious --vitest-plugin --promise-plugin --node-plugin --deny-warnings",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -14,7 +14,8 @@
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
-    "db:migrate:deploy": "prisma migrate deploy"
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed:demo": "prisma db seed"
   },
   "keywords": [],
   "author": "",

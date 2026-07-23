@@ -2,15 +2,26 @@ import type { Request, Response } from "express";
 import { getValidatedRequest } from "../../middleware/validation.middleware.js";
 import {
   changeUsersBlockedStatus,
+  createRecruiter,
   deleteAdminUsers,
   listAdminUsers,
   promoteRecruiterToAdmin,
 } from "./admin-user.service.js";
 import type {
+  CreateRecruiterRequest,
   ListAdminUsersRequest,
   MutateAdminUsersRequest,
   PromoteRecruiterRequest,
 } from "./admin-user.validation.js";
+
+export async function createRecruiterRecord(
+  _request: Request,
+  response: Response,
+): Promise<void> {
+  const { body } =
+    getValidatedRequest<CreateRecruiterRequest>(response);
+  response.status(201).json(await createRecruiter(body));
+}
 
 export async function listAdminUserRecords(
   _request: Request,

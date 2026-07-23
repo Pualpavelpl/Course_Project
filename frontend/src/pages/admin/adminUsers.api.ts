@@ -18,6 +18,19 @@ export interface AdminUserReference {
   role: AdminUserRole;
 }
 
+export interface CreateRecruiterInput {
+  email: string;
+  password: string;
+}
+
+export interface CreatedRecruiter {
+  id: string;
+  email: string;
+  role: "RECRUITER";
+  status: "ACTIVE";
+  createdAt: string;
+}
+
 interface ListAdminUsersInput {
   page: number;
   pageSize: number;
@@ -98,4 +111,13 @@ export function promoteRecruiter(
     `/api/admin/recruiters/${recruiterId}/promote`,
     { method: "POST" },
   );
+}
+
+export function createRecruiter(
+  input: CreateRecruiterInput,
+): Promise<CreatedRecruiter> {
+  return apiRequest("/api/admin/recruiters", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }

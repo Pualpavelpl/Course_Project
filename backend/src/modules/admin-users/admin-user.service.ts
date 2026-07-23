@@ -1,5 +1,11 @@
 import { AppError } from "../../shared/errors/app-error.js";
 import { getPagination } from "../../shared/http/pagination.js";
+import { candidateEmailExists } from "../candidates/candidate.repository.js";
+import {
+  createRecruiterAccount,
+  recruiterEmailExists,
+} from "../recruiters/recruiter.repository.js";
+import { hashPassword } from "../auth/password.js";
 import {
   deleteUsers as deleteUserRecords,
   findAdminUsers,
@@ -8,6 +14,7 @@ import {
 } from "./admin-user.repository.js";
 import type {
   AdminUserReference,
+  CreateRecruiterRequest,
   ListAdminUsersRequest,
 } from "./admin-user.validation.js";
 
@@ -51,6 +58,42 @@ export async function listAdminUsers(
       total: result.total,
       totalPages: Math.ceil(result.total / take),
     },
+  };
+}
+
+export async function createRecruiter(
+  input: CreateRecruiterRequest["body"],
+) {
+  const [candidateExists, recruiterExists] = await Promise.all([
+    candidateEmailExists(input.email),
+    recruiterEmailExists(input.email),
+  ]);
+
+  if (candidateExists || recruiterExists) {
+    throw new AppError(
+      409,
+      "EMAIL_CONFLICT",
+      "Email is already registered",
+    );
+  }
+
+  const passwordHash = await hashPassword(input.password);
+  const result = await createRecruiterAccount(input.email, passwordHash);
+
+  if (result.status === "email_conflict") {
+    throw new AppError(
+      409,
+      "EMAIL_CONFLICT",
+      "Email is already registered",
+    );
+  }
+
+  return {
+    id: result.recruiter.id,
+    email: result.recruiter.email,
+    role: "RECRUITER" as const,
+    status: result.recruiter.isBlocked ? "BLOCKED" as const : "ACTIVE" as const,
+    createdAt: result.recruiter.createdAt,
   };
 }
 

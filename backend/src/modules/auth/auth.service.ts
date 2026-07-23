@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import {
   candidateEmailExists,
@@ -18,15 +17,12 @@ import {
   authTokenPayloadSchema,
   type AuthTokenPayload,
 } from "./auth.validation.js";
+import { hashPassword, verifyPassword } from "./password.js";
 
-const PASSWORD_HASH_ROUNDS = 12;
 const JWT_ALGORITHM = "HS256";
 const JWT_ISSUER = "course-project-api";
 const JWT_AUDIENCE = "course-project-web";
-const dummyPasswordHash = bcrypt.hash(
-  "not-a-real-user-password",
-  PASSWORD_HASH_ROUNDS,
-);
+const dummyPasswordHash = hashPassword("not-a-real-user-password");
 
 interface CredentialsAccount {
   id: string;
@@ -88,7 +84,7 @@ async function loginWithCredentials(
   const normalizedEmail = normalizeEmail(email);
   const account = await findCredentialsByEmail(normalizedEmail);
   const passwordHash = account?.passwordHash ?? (await dummyPasswordHash);
-  const passwordMatches = await bcrypt.compare(password, passwordHash);
+  const passwordMatches = await verifyPassword(password, passwordHash);
 
   if (!account || !passwordMatches) {
     throw createInvalidCredentialsError();
@@ -119,7 +115,7 @@ export async function registerCandidate(
     throw new AppError(409, "EMAIL_CONFLICT", "Email is already registered");
   }
 
-  const passwordHash = await bcrypt.hash(password, PASSWORD_HASH_ROUNDS);
+  const passwordHash = await hashPassword(password);
   const creationResult = await createCandidateWithProfile(
     normalizedEmail,
     passwordHash,

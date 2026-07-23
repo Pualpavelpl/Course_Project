@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  accountEmailSchema,
+  newAccountPasswordSchema,
+} from "../auth/auth.validation.js";
 
 const emptyParamsSchema = z.strictObject({});
 const emptyBodySchema = z.undefined().optional();
@@ -44,6 +48,15 @@ export const promoteRecruiterRequestSchema = z.strictObject({
   query: emptyQuerySchema,
 });
 
+export const createRecruiterRequestSchema = z.strictObject({
+  body: z.strictObject({
+    email: accountEmailSchema,
+    password: newAccountPasswordSchema,
+  }),
+  params: emptyParamsSchema,
+  query: emptyQuerySchema,
+});
+
 export type AdminUserRole = z.infer<typeof adminUserRoleSchema>;
 export type AdminUserReference = z.infer<
   typeof adminUserReferenceSchema
@@ -56,4 +69,7 @@ export type MutateAdminUsersRequest = z.infer<
 >;
 export type PromoteRecruiterRequest = z.infer<
   typeof promoteRecruiterRequestSchema
+>;
+export type CreateRecruiterRequest = z.infer<
+  typeof createRecruiterRequestSchema
 >;

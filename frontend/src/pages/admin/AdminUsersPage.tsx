@@ -17,6 +17,7 @@ import {
   type AdminUserRole,
   type AdminUserStatus,
 } from "./adminUsers.api";
+import { CreateRecruiterModal } from "./CreateRecruiterModal";
 
 const PAGE_SIZE = 20;
 const roleFilters: Array<{ label: string; value: AdminUserRole }> = [
@@ -73,6 +74,8 @@ export function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [successMessage, setSuccessMessage] = useState<string>();
+  const [createRecruiterOpen, setCreateRecruiterOpen] = useState(false);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const debouncedSearch = useDebouncedValue(search);
   const role = roleFilterIndex === undefined
@@ -172,7 +175,20 @@ export function AdminUsersPage() {
 
   return (
     <>
-      <PageHeader title="Users" />
+      <PageHeader
+        title="Users"
+        actions={
+          <Button
+            variant="success"
+            onClick={() => {
+              setSuccessMessage(undefined);
+              setCreateRecruiterOpen(true);
+            }}
+          >
+            Create Recruiter
+          </Button>
+        }
+      />
       <ListToolbar
         search={search}
         onSearchChange={(value) => {
@@ -256,6 +272,9 @@ export function AdminUsersPage() {
           </>
         }
       />
+      {successMessage ? (
+        <Alert variant="success">{successMessage}</Alert>
+      ) : null}
       {errorMessage ? <Alert variant="danger">{errorMessage}</Alert> : null}
       {isLoading ? <Alert variant="info">Loading Users...</Alert> : null}
       <DataTable
@@ -282,6 +301,15 @@ export function AdminUsersPage() {
           Next
         </Button>
       </div>
+      <CreateRecruiterModal
+        show={createRecruiterOpen}
+        onHide={() => setCreateRecruiterOpen(false)}
+        onCreated={(email) => {
+          setSuccessMessage(`Recruiter ${email} was created.`);
+          setPage(1);
+          setRefreshVersion((current) => current + 1);
+        }}
+      />
     </>
   );
 }

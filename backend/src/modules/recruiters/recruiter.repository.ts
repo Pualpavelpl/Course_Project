@@ -81,3 +81,39 @@ export async function recruiterEmailExists(email: string): Promise<boolean> {
 
   return recruiter !== null;
 }
+
+export async function createRecruiterAccount(
+  email: string,
+  passwordHash: string,
+) {
+  try {
+    const recruiter = await getPrismaClient().recruiter.create({
+      data: {
+        email,
+        passwordHash,
+      },
+      select: {
+        id: true,
+        email: true,
+        isBlocked: true,
+        createdAt: true,
+      },
+    });
+
+    return {
+      status: "created" as const,
+      recruiter,
+    };
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        status: "email_conflict" as const,
+      };
+    }
+
+    throw error;
+  }
+}

@@ -3,12 +3,14 @@ import { validateRequest } from "../../middleware/validation.middleware.js";
 import { authenticate, requireAdmin } from "../auth/auth.middleware.js";
 import {
   blockAdminUserRecords,
+  createRecruiterRecord,
   deleteAdminUserRecords,
   listAdminUserRecords,
   promoteRecruiterRecord,
   unblockAdminUserRecords,
 } from "./admin-user.controller.js";
 import {
+  createRecruiterRequestSchema,
   listAdminUsersRequestSchema,
   mutateAdminUsersRequestSchema,
   promoteRecruiterRequestSchema,
@@ -36,6 +38,11 @@ adminUserRouter.delete(
   "/users",
   validateRequest(mutateAdminUsersRequestSchema),
   deleteAdminUserRecords,
+);
+adminUserRouter.post(
+  "/recruiters",
+  validateRequest(createRecruiterRequestSchema),
+  createRecruiterRecord,
 );
 adminUserRouter.post(
   "/recruiters/:recruiterId/promote",

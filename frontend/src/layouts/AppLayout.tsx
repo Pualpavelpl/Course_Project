@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Navbar, Offcanvas } from "react-bootstrap";
 import { Outlet } from "react-router-dom";
 import type { NavigationItem } from "../config/navigation";
+import { ThemeToggle } from "../shared/theme/ThemeToggle";
 import { SidebarNavigation } from "../shared/ui/SidebarNavigation";
 
 interface AppLayoutProps {
@@ -21,7 +22,7 @@ export function AppLayout({ accountLabel, navigationItems }: AppLayoutProps) {
 
   return (
     <div className="app-shell">
-      <Navbar className="border-bottom bg-white px-3 py-3">
+      <Navbar className="border-bottom bg-body px-3 py-3">
         <Button
           variant="outline-secondary"
           className="d-md-none me-2"
@@ -33,10 +34,13 @@ export function AppLayout({ accountLabel, navigationItems }: AppLayoutProps) {
         <Navbar.Brand className="mb-0 fw-semibold">
           Recruitment platform
         </Navbar.Brand>
+        <div className="ms-auto">
+          <ThemeToggle id="app-theme-toggle" />
+        </div>
       </Navbar>
 
       <div className="d-flex flex-grow-1">
-        <aside className="app-sidebar d-none d-md-block border-end bg-white">
+        <aside className="app-sidebar d-none d-md-block border-end bg-body">
           {navigation}
         </aside>
 
@@ -45,7 +49,7 @@ export function AppLayout({ accountLabel, navigationItems }: AppLayoutProps) {
         </main>
       </div>
 
-      <footer className="border-top bg-white py-3 text-center text-secondary small">
+      <footer className="border-top bg-body py-3 text-center text-secondary small">
         Recruitment platform
       </footer>
 

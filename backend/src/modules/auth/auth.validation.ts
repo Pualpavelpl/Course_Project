@@ -5,7 +5,7 @@ import { AUTH_ROLES } from "./auth.types.js";
 const emptyParamsSchema = z.strictObject({});
 const emptyQuerySchema = z.strictObject({});
 
-const emailSchema = z
+export const accountEmailSchema = z
   .string()
   .trim()
   .toLowerCase()
@@ -16,12 +16,12 @@ const passwordSchema = z
   .min(1)
   .refine((password) => !bcrypt.truncates(password));
 
-const candidatePasswordSchema = passwordSchema.min(8);
+export const newAccountPasswordSchema = passwordSchema.min(8);
 
 export const candidateRegistrationRequestSchema = z.strictObject({
   body: z.strictObject({
-    email: emailSchema,
-    password: candidatePasswordSchema,
+    email: accountEmailSchema,
+    password: newAccountPasswordSchema,
   }),
   params: emptyParamsSchema,
   query: emptyQuerySchema,
@@ -29,7 +29,7 @@ export const candidateRegistrationRequestSchema = z.strictObject({
 
 export const loginRequestSchema = z.strictObject({
   body: z.strictObject({
-    email: emailSchema,
+    email: accountEmailSchema,
     password: passwordSchema,
   }),
   params: emptyParamsSchema,

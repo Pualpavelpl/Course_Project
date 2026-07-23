@@ -5,7 +5,11 @@ body,
 }
 
 body {
-  background: #f8f9fa;
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
 .app-shell {
@@ -36,6 +40,24 @@ body {
 
 .selection-column {
   width: 48px;
+}
+
+.theme-toggle {
+  color: var(--bs-body-color);
+  white-space: nowrap;
+}
+
+.theme-toggle .form-check-input,
+.theme-toggle .form-check-label {
+  cursor: pointer;
+}
+
+[data-bs-theme="dark"] .table-success {
+  --bs-table-color: var(--bs-success-text-emphasis);
+  --bs-table-bg: var(--bs-success-bg-subtle);
+  --bs-table-border-color: var(--bs-success-border-subtle);
+  --bs-table-hover-color: var(--bs-success-text-emphasis);
+  --bs-table-hover-bg: rgba(var(--bs-success-rgb), 0.2);
 }
 
 @media (max-width: 575.98px) {

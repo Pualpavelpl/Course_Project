@@ -36,7 +36,7 @@ export function DataTable<Row extends { id: string }>({
   };
 
   return (
-    <div className="border rounded bg-white table-responsive">
+    <div className="border rounded bg-body table-responsive">
       <Table bordered hover className="mb-0 align-middle" aria-label="Data table">
         <thead>
           <tr>

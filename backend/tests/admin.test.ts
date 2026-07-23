@@ -334,6 +334,85 @@ describe("Admin Users API", () => {
       }),
     ).not.toBeNull();
   });
+
+  it("lets Admin create Recruiter credentials used by Employee login", async () => {
+    const admin = await createEmployee("admin@example.com", true);
+    const token = await loginEmployee(admin.email);
+    const recruiterPassword = "recruiter-password";
+
+    const creation = await request(app)
+      .post("/api/admin/recruiters")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        email: "  NEW.RECRUITER@EXAMPLE.COM ",
+        password: recruiterPassword,
+      });
+    const storedRecruiter = await getPrismaClient().recruiter.findUnique({
+      where: { email: "new.recruiter@example.com" },
+      select: {
+        id: true,
+        email: true,
+        passwordHash: true,
+        admin: { select: { recruiterId: true } },
+      },
+    });
+    const login = await request(app)
+      .post("/api/auth/recruiters/login")
+      .send({
+        email: "new.recruiter@example.com",
+        password: recruiterPassword,
+      });
+
+    expect(creation.status).toBe(201);
+    expect(creation.body).toMatchObject({
+      email: "new.recruiter@example.com",
+      role: "RECRUITER",
+      status: "ACTIVE",
+    });
+    expect(JSON.stringify(creation.body).toLowerCase()).not.toContain(
+      "password",
+    );
+    expect(storedRecruiter?.admin).toBeNull();
+    expect(
+      await bcrypt.compare(
+        recruiterPassword,
+        storedRecruiter?.passwordHash ?? "",
+      ),
+    ).toBe(true);
+    expect(login.status).toBe(200);
+    expect(login.body.user.role).toBe("RECRUITER");
+  });
+
+  it("rejects invalid, duplicate and non-Admin Recruiter creation", async () => {
+    const admin = await createEmployee("admin@example.com", true);
+    const recruiter = await createEmployee("employee@example.com");
+    await createCandidate("candidate@example.com");
+    const adminToken = await loginEmployee(admin.email);
+    const recruiterToken = await loginEmployee(recruiter.email);
+
+    const invalid = await request(app)
+      .post("/api/admin/recruiters")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ email: "new@example.com", password: "short" });
+    const candidateConflict = await request(app)
+      .post("/api/admin/recruiters")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ email: "candidate@example.com", password });
+    const recruiterConflict = await request(app)
+      .post("/api/admin/recruiters")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ email: recruiter.email, password });
+    const forbidden = await request(app)
+      .post("/api/admin/recruiters")
+      .set("Authorization", `Bearer ${recruiterToken}`)
+      .send({ email: "forbidden@example.com", password });
+
+    expect(invalid.status).toBe(400);
+    expect(candidateConflict.status).toBe(409);
+    expect(candidateConflict.body.error.code).toBe("EMAIL_CONFLICT");
+    expect(recruiterConflict.status).toBe(409);
+    expect(forbidden.status).toBe(403);
+  });
 });
 
 describe("Admin Candidate management", () => {
