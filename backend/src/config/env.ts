@@ -4,6 +4,21 @@ import { z } from "zod";
 const JWT_SECRET_PLACEHOLDER =
   "REPLACE_WITH_RANDOM_SECRET_AT_LEAST_32_CHARACTERS";
 
+const frontendUrlsSchema = z
+  .string()
+  .transform((value) =>
+    value.split(",").map((url) => url.trim()),
+  )
+  .pipe(
+    z
+      .array(
+        z.url({
+          protocol: /^https?$/,
+        }),
+      )
+      .min(1),
+  );
+
 const environmentSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -12,9 +27,7 @@ const environmentSchema = z.object({
   DATABASE_URL: z.url({
     protocol: /^postgres(ql)?$/,
   }),
-  FRONTEND_URL: z.url({
-    protocol: /^https?$/,
-  }),
+  FRONTEND_URL: frontendUrlsSchema,
   JWT_SECRET: z
     .string()
     .min(32)

@@ -2,6 +2,7 @@ import { Router } from "express";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { app, createApp } from "../src/app.js";
+import { parseEnvironment } from "../src/config/env.js";
 
 describe("HTTP application", () => {
   it("returns process health without a database connection", async () => {
@@ -11,6 +12,31 @@ describe("HTTP application", () => {
     expect(response.body).toEqual({
       status: "ok",
     });
+  });
+
+  it("supports multiple configured frontend origins", async () => {
+    const parsedEnvironment = parseEnvironment({
+      ...process.env,
+      FRONTEND_URL:
+        "https://production.example, https://preview.example",
+    });
+
+    expect(parsedEnvironment.FRONTEND_URL).toEqual([
+      "https://production.example",
+      "https://preview.example",
+    ]);
+  });
+
+  it("allows preflight from the configured frontend origin", async () => {
+    const response = await request(app)
+      .options("/api/auth/recruiters/login")
+      .set("Origin", "https://frontend.example")
+      .set("Access-Control-Request-Method", "POST");
+
+    expect(response.status).toBe(204);
+    expect(response.headers["access-control-allow-origin"]).toBe(
+      "https://frontend.example",
+    );
   });
 
   it("returns a centralized 404 response for an unknown endpoint", async () => {
