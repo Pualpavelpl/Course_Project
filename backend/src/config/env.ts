@@ -4,19 +4,53 @@ import { z } from "zod";
 const JWT_SECRET_PLACEHOLDER =
   "REPLACE_WITH_RANDOM_SECRET_AT_LEAST_32_CHARACTERS";
 
+function isHttpOrigin(value: string): boolean {
+  try {
+    const url = new URL(value);
+
+    return (
+      ["http:", "https:"].includes(url.protocol) &&
+      url.origin === value.replace(/\/$/u, "")
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isHttpOriginPattern(value: string): boolean {
+  const wildcardCount = value.split("*").length - 1;
+
+  if (wildcardCount === 0) {
+    return isHttpOrigin(value);
+  }
+
+  if (
+    wildcardCount !== 1 ||
+    !/^https?:\/\/[^/?#]*\*[^/?#]*$/u.test(value)
+  ) {
+    return false;
+  }
+
+  return isHttpOrigin(value.replace("*", "preview"));
+}
+
+const frontendOriginSchema = z
+  .string()
+  .trim()
+  .refine(isHttpOriginPattern)
+  .transform((value) =>
+    value.includes("*")
+      ? value
+      : new URL(value).origin,
+  );
+
 const frontendUrlsSchema = z
   .string()
   .transform((value) =>
     value.split(",").map((url) => url.trim()),
   )
   .pipe(
-    z
-      .array(
-        z.url({
-          protocol: /^https?$/,
-        }),
-      )
-      .min(1),
+    z.array(frontendOriginSchema).min(1),
   );
 
 const environmentSchema = z.object({

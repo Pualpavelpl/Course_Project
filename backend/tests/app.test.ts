@@ -18,13 +18,52 @@ describe("HTTP application", () => {
     const parsedEnvironment = parseEnvironment({
       ...process.env,
       FRONTEND_URL:
-        "https://production.example, https://preview.example",
+        "https://production.example, https://course-project-*-pavel30.vercel.app",
     });
 
     expect(parsedEnvironment.FRONTEND_URL).toEqual([
       "https://production.example",
-      "https://preview.example",
+      "https://course-project-*-pavel30.vercel.app",
     ]);
+  });
+
+  it("allows preflight from a matching Vercel preview origin", async () => {
+    const previewApplication = createApp(
+      Router(),
+      [
+        "https://course-project-gold-nine.vercel.app",
+        "https://course-project-*-pavel30.vercel.app",
+      ],
+    );
+    const previewOrigin =
+      "https://course-project-86ttdvgh1-pavel30.vercel.app";
+    const response = await request(previewApplication)
+      .options("/api/auth/recruiters/login")
+      .set("Origin", previewOrigin)
+      .set("Access-Control-Request-Method", "POST");
+
+    expect(response.status).toBe(204);
+    expect(response.headers["access-control-allow-origin"]).toBe(
+      previewOrigin,
+    );
+  });
+
+  it("rejects preflight from another Vercel account", async () => {
+    const previewApplication = createApp(
+      Router(),
+      ["https://course-project-*-pavel30.vercel.app"],
+    );
+    const response = await request(previewApplication)
+      .options("/api/auth/recruiters/login")
+      .set(
+        "Origin",
+        "https://course-project-preview-another-account.vercel.app",
+      )
+      .set("Access-Control-Request-Method", "POST");
+
+    expect(
+      response.headers["access-control-allow-origin"],
+    ).toBeUndefined();
   });
 
   it("allows preflight from the configured frontend origin", async () => {
