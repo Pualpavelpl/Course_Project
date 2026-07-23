@@ -16,24 +16,24 @@ export interface ProjectListItem {
 }
 
 export const meAttributes: ProfileAttributeListItem[] = [
-  { id: "first-name", name: "First name", value: "Anna", category: "Personal Information" },
-  { id: "last-name", name: "Last name", value: "Kowalska", category: "Personal Information" },
-  { id: "location", name: "Location", value: "Warsaw", category: "Personal Information" },
+  { id: "first-name", name: "First name", value: "Anna", category: "PERSONAL_INFORMATION" },
+  { id: "last-name", name: "Last name", value: "Kowalska", category: "PERSONAL_INFORMATION" },
+  { id: "location", name: "Location", value: "Warsaw", category: "PERSONAL_INFORMATION" },
 ];
 
 export const initialInfoAttributes: ProfileAttributeListItem[] = [
-  { id: "ielts-score", name: "IELTS Score", value: "7.5", category: "Certification" },
+  { id: "ielts-score", name: "IELTS Score", value: "7.5", category: "CERTIFICATION" },
   {
     id: "presentation-skills",
     name: "Presentation Skills",
     value: "Advanced",
-    category: "Soft Skills",
+    category: "SOFT_SKILLS",
   },
   {
     id: "react-knowledge",
     name: "React Knowledge",
     value: "Advanced",
-    category: "Domain Knowledge",
+    category: "DOMAIN_KNOWLEDGE",
   },
 ];
 

@@ -1,0 +1,63 @@
+import { Router } from "express";
+import request from "supertest";
+import { describe, expect, it } from "vitest";
+import { app, createApp } from "../src/app.js";
+
+describe("HTTP application", () => {
+  it("returns process health without a database connection", async () => {
+    const response = await request(app).get("/api/health");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      status: "ok",
+    });
+  });
+
+  it("returns a centralized 404 response for an unknown endpoint", async () => {
+    const response = await request(app).get("/api/unknown");
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      error: {
+        code: "ROUTE_NOT_FOUND",
+        message: "Route not found",
+      },
+    });
+  });
+
+  it("returns 400 for unknown request values", async () => {
+    const response = await request(app).get(
+      "/api/health?unexpected=value",
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Invalid request",
+      },
+    });
+  });
+
+  it("does not expose internal errors or stack traces", async () => {
+    const failingRouter = Router();
+    failingRouter.get("/failure", () => {
+      throw new Error("sensitive internal test error");
+    });
+
+    const response = await request(createApp(failingRouter)).get(
+      "/api/failure",
+    );
+    const serializedBody = JSON.stringify(response.body);
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Internal server error",
+      },
+    });
+    expect(serializedBody).not.toContain("stack");
+    expect(serializedBody).not.toContain("sensitive internal test error");
+  });
+});

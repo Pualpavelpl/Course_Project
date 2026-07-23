@@ -1,50 +1,259 @@
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
 }
 
 datasource db {
   provider = "postgresql"
-  
 }
 
-enum UserRole {
-  CANDIDATE
-  RECRUITER
-  ADMIN
+enum AttributeType {
+  STRING
+  NUMBER
+  DATE
+  PERIOD
+  BOOLEAN
+  SINGLE_SELECT
 }
 
-enum VacancyStatus {
-  DRAFT
-  PUBLISHED
-  CLOSED
+enum AttributeCategory {
+  PERSONAL_INFORMATION
+  CERTIFICATION
+  DOMAIN_KNOWLEDGE
+  SOFT_SKILLS
 }
 
-model User {
-  id           String    @id @default(uuid()) @db.Uuid
-  email        String    @unique @db.VarChar(255)
-  passwordHash String    @map("password_hash") @db.VarChar(255)
-  role         UserRole
-  isBlocked    Boolean   @default(false) @map("is_blocked")
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-
-  vacancies Vacancy[]
-
-  @@map("users")
+enum AccessOperator {
+  EQUALS
+  NOT_EQUALS
+  GREATER_THAN
+  GREATER_OR_EQUAL
+  LESS_THAN
+  LESS_OR_EQUAL
+  CONTAINS
 }
 
-model Vacancy {
-  id          String        @id @default(uuid()) @db.Uuid
-  userId      String        @map("user_id") @db.Uuid
-  title       String        @db.VarChar(255)
+model Candidate {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  isBlocked    Boolean  @default(false) @map("is_blocked")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  profile Profile?
+
+  @@map("Candidate")
+}
+
+model Recruiter {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  isBlocked    Boolean  @default(false) @map("is_blocked")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  admin   Admin?
+  cvLikes CvLike[]
+
+  @@map("Recruiter")
+}
+
+model Admin {
+  recruiterId String   @id @map("recruiter_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  @@map("Admin")
+}
+
+model Profile {
+  id          String   @id @default(uuid()) @db.Uuid
+  candidateId String   @unique @map("candidate_id") @db.Uuid
+  version     Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  candidate         Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  profileAttributes ProfileAttribute[]
+  projects          Project[]
+  cvs               Cv[]
+
+  @@map("Profile")
+}
+
+model Attribute {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String            @unique @db.VarChar(255)
   description String
-  status      VacancyStatus @default(DRAFT)
-  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  type        AttributeType
+  category    AttributeCategory
+  isBuiltin   Boolean           @default(false) @map("is_builtin")
+  version     Int               @default(1)
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  options            AttributeOption[]
+  profileAttributes  ProfileAttribute[]
+  positionAttributes PositionAttribute[]
+  accessPositions    Position[]          @relation("PositionAccessAttribute")
 
-  @@index([status])
-  @@index([userId])
-  @@map("vacancies")
+  @@index([category, name])
+  @@map("Attribute")
+}
+
+model AttributeOption {
+  id          String @id @default(uuid()) @db.Uuid
+  attributeId String @map("attribute_id") @db.Uuid
+  value       String @db.VarChar(255)
+  sortOrder   Int    @default(0) @map("sort_order")
+
+  attribute         Attribute          @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  profileAttributes ProfileAttribute[]
+  accessPositions   Position[]         @relation("PositionAccessOption")
+
+  @@unique([attributeId, value])
+  @@map("Attribute_option")
+}
+
+model ProfileAttribute {
+  id          String   @id @default(uuid()) @db.Uuid
+  profileId   String   @map("profile_id") @db.Uuid
+  attributeId String   @map("attribute_id") @db.Uuid
+  optionId    String?  @map("option_id") @db.Uuid
+  value       String?  @db.VarChar(1000)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  profile   Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  attribute Attribute        @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+  option    AttributeOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
+
+  @@unique([profileId, attributeId])
+  @@index([attributeId])
+  @@index([optionId])
+  @@map("Profile_attribute")
+}
+
+model Project {
+  id          String    @id @default(uuid()) @db.Uuid
+  profileId   String    @map("profile_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  periodStart DateTime  @map("period_start") @db.Date
+  periodEnd   DateTime? @map("period_end") @db.Date
+  description String
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  profile     Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  projectTags ProjectTag[]
+
+  @@index([profileId])
+  @@map("Project")
+}
+
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  projectTags  ProjectTag[]
+  positionTags PositionTag[]
+
+  @@map("Tag")
+}
+
+model ProjectTag {
+  projectId String @map("project_id") @db.Uuid
+  tagId     String @map("tag_id") @db.Uuid
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+  @@index([tagId])
+  @@map("Project_tag")
+}
+
+model Position {
+  id                String          @id @default(uuid()) @db.Uuid
+  name              String          @db.VarChar(255)
+  description       String
+  isPublic          Boolean         @default(true) @map("is_public")
+  maxProjects       Int             @default(3) @map("max_projects")
+  version           Int             @default(1)
+  accessAttributeId String?         @map("access_attribute_id") @db.Uuid
+  accessOperator    AccessOperator? @map("access_operator")
+  accessOptionId    String?         @map("access_option_id") @db.Uuid
+  accessValue       String?         @map("access_value") @db.VarChar(1000)
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  accessAttribute    Attribute?          @relation("PositionAccessAttribute", fields: [accessAttributeId], references: [id], onDelete: Restrict)
+  accessOption       AttributeOption?    @relation("PositionAccessOption", fields: [accessOptionId], references: [id], onDelete: SetNull)
+  positionAttributes PositionAttribute[]
+  positionTags       PositionTag[]
+  cvs                Cv[]
+
+  @@index([name])
+  @@map("Position")
+}
+
+model PositionAttribute {
+  positionId  String   @map("position_id") @db.Uuid
+  attributeId String   @map("attribute_id") @db.Uuid
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  position  Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+
+  @@id([positionId, attributeId])
+  @@index([attributeId])
+  @@map("Position_attribute")
+}
+
+model PositionTag {
+  positionId String @map("position_id") @db.Uuid
+  tagId      String @map("tag_id") @db.Uuid
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([positionId, tagId])
+  @@index([tagId])
+  @@map("Position_tag")
+}
+
+model Cv {
+  id         String   @id @default(uuid()) @db.Uuid
+  profileId  String   @map("profile_id") @db.Uuid
+  positionId String   @map("position_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  profile  Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  cvLikes  CvLike[]
+
+  @@unique([profileId, positionId])
+  @@index([positionId])
+  @@map("CV")
+}
+
+model CvLike {
+  cvId        String   @map("cv_id") @db.Uuid
+  recruiterId String   @map("recruiter_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  cv        Cv        @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  @@id([cvId, recruiterId])
+  @@index([recruiterId])
+  @@map("CV_like")
 }

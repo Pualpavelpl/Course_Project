@@ -10,6 +10,10 @@ interface EntityCreatePageProps {
   createLabel: string;
   submitLabel: string;
   children: ReactNode;
+  errorMessage?: string | undefined;
+  isSubmitting?: boolean | undefined;
+  submitDisabled?: boolean | undefined;
+  onSubmit?: (() => Promise<void> | void) | undefined;
 }
 
 export function EntityCreatePage({
@@ -19,12 +23,22 @@ export function EntityCreatePage({
   createLabel,
   submitLabel,
   children,
+  errorMessage,
+  isSubmitting = false,
+  submitDisabled = false,
+  onSubmit,
 }: EntityCreatePageProps) {
   const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (onSubmit) {
+      await onSubmit();
+      return;
+    }
+
     setSaved(true);
   };
 
@@ -41,10 +55,15 @@ export function EntityCreatePage({
               {createLabel}
             </span>
           </div>
-          <Button type="submit" variant="success">
-            {submitLabel}
+          <Button
+            type="submit"
+            variant="success"
+            disabled={isSubmitting || submitDisabled}
+          >
+            {isSubmitting ? "Saving..." : submitLabel}
           </Button>
         </div>
+        {errorMessage ? <Alert variant="danger">{errorMessage}</Alert> : null}
         {saved ? <Alert variant="success">Saved in the frontend mock.</Alert> : null}
         <div className="d-grid gap-3">{children}</div>
       </Form>

@@ -14,3 +14,16 @@ export const recruiterNavigation: NavigationItem[] = [
     path: "/recruiter/cv-search",
   },
 ];
+
+const adminUsersNavigation: NavigationItem = {
+  label: "Users",
+  path: "/admin/users",
+};
+
+export function getEmployeeNavigation(
+  isAdmin: boolean,
+): NavigationItem[] {
+  return isAdmin
+    ? [...recruiterNavigation, adminUsersNavigation]
+    : recruiterNavigation;
+}

@@ -1,27 +1,14 @@
-export const attributeCategories = [
-  "Personal Information",
-  "Certification",
-  "Domain Knowledge",
-  "Soft Skills",
-] as const;
-
-export const attributeTypes = [
-  "String",
-  "Text",
-  "Image",
-  "Numeric",
-  "Date",
-  "Period",
-  "Boolean",
-  "One of many",
-] as const;
+import type {
+  AttributeCategory,
+  AttributeType,
+} from "./attributes.api";
 
 export interface AttributeListItem {
   id: string;
   name: string;
   description: string;
-  type: (typeof attributeTypes)[number];
-  category: (typeof attributeCategories)[number];
+  type: AttributeType;
+  category: AttributeCategory;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,8 +18,8 @@ export const initialAttributes: AttributeListItem[] = [
     id: "location",
     name: "Location",
     description: "Candidate location",
-    type: "String",
-    category: "Personal Information",
+    type: "STRING",
+    category: "PERSONAL_INFORMATION",
     createdAt: "2026-07-08",
     updatedAt: "2026-07-18",
   },
@@ -40,8 +27,8 @@ export const initialAttributes: AttributeListItem[] = [
     id: "ielts-score",
     name: "IELTS Score",
     description: "English language certification score",
-    type: "Numeric",
-    category: "Certification",
+    type: "NUMBER",
+    category: "CERTIFICATION",
     createdAt: "2026-07-10",
     updatedAt: "2026-07-19",
   },
@@ -49,8 +36,8 @@ export const initialAttributes: AttributeListItem[] = [
     id: "presentation-skills",
     name: "Presentation Skills",
     description: "Candidate presentation skill level",
-    type: "One of many",
-    category: "Soft Skills",
+    type: "SINGLE_SELECT",
+    category: "SOFT_SKILLS",
     createdAt: "2026-07-12",
     updatedAt: "2026-07-20",
   },
@@ -58,8 +45,8 @@ export const initialAttributes: AttributeListItem[] = [
     id: "remote-work",
     name: "Remote Work Availability",
     description: "Whether the candidate is available for remote work",
-    type: "Boolean",
-    category: "Personal Information",
+    type: "BOOLEAN",
+    category: "PERSONAL_INFORMATION",
     createdAt: "2026-07-13",
     updatedAt: "2026-07-20",
   },
@@ -67,8 +54,8 @@ export const initialAttributes: AttributeListItem[] = [
     id: "github-profile",
     name: "GitHub Profile",
     description: "Link to the candidate GitHub profile",
-    type: "String",
-    category: "Domain Knowledge",
+    type: "STRING",
+    category: "DOMAIN_KNOWLEDGE",
     createdAt: "2026-07-14",
     updatedAt: "2026-07-20",
   },
@@ -76,8 +63,8 @@ export const initialAttributes: AttributeListItem[] = [
     id: "teamwork",
     name: "Teamwork",
     description: "Candidate teamwork skill level",
-    type: "One of many",
-    category: "Soft Skills",
+    type: "SINGLE_SELECT",
+    category: "SOFT_SKILLS",
     createdAt: "2026-07-15",
     updatedAt: "2026-07-20",
   },

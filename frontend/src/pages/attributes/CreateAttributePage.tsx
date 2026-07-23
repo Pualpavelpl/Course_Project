@@ -1,8 +1,60 @@
-import { Card, Form } from "react-bootstrap";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getApiErrorMessage } from "../../shared/api/apiClient";
 import { EntityCreatePage } from "../../shared/ui/EntityCreatePage";
-import { attributeCategories, attributeTypes } from "./attributes.mock";
+import { AttributeForm, type AttributeFormValue } from "./AttributeForm";
+import { createAttribute } from "./attributes.api";
+
+const initialValue: AttributeFormValue = {
+  name: "",
+  description: "",
+  type: "",
+  category: "",
+  optionsText: "",
+};
+
+function parseOptions(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((option) => option.trim())
+    .filter(Boolean);
+}
 
 export function CreateAttributePage() {
+  const navigate = useNavigate();
+  const [value, setValue] = useState(initialValue);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>();
+
+  const submitAttribute = async () => {
+    if (!value.type || !value.category) {
+      setErrorMessage("Select Attribute type and category");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(undefined);
+
+    try {
+      await createAttribute({
+        name: value.name,
+        description: value.description,
+        type: value.type,
+        category: value.category,
+        ...(value.type === "SINGLE_SELECT"
+          ? { options: parseOptions(value.optionsText) }
+          : {}),
+      });
+      navigate("/recruiter/attributes");
+    } catch (error) {
+      setErrorMessage(
+        getApiErrorMessage(error, "Unable to create Attribute"),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <EntityCreatePage
       title="Create attribute"
@@ -10,33 +62,15 @@ export function CreateAttributePage() {
       listPath="/recruiter/attributes"
       createLabel="Create attribute"
       submitLabel="Create attribute"
+      errorMessage={errorMessage}
+      isSubmitting={isSubmitting}
+      onSubmit={submitAttribute}
     >
-      <Card>
-        <Card.Body className="d-grid gap-3">
-          <Form.Group controlId="attributeName">
-            <Form.Label>Name</Form.Label>
-            <Form.Control required />
-          </Form.Group>
-          <Form.Group controlId="attributeDescription">
-            <Form.Label>Description</Form.Label>
-            <Form.Control as="textarea" rows={3} required />
-          </Form.Group>
-          <Form.Group controlId="attributeType">
-            <Form.Label>Type</Form.Label>
-            <Form.Select required defaultValue="">
-              <option value="" disabled>Select type</option>
-              {attributeTypes.map((type) => <option key={type}>{type}</option>)}
-            </Form.Select>
-          </Form.Group>
-          <Form.Group controlId="attributeCategory">
-            <Form.Label>Category</Form.Label>
-            <Form.Select required defaultValue="">
-              <option value="" disabled>Select category</option>
-              {attributeCategories.map((category) => <option key={category}>{category}</option>)}
-            </Form.Select>
-          </Form.Group>
-        </Card.Body>
-      </Card>
+      <AttributeForm
+        value={value}
+        onChange={setValue}
+        disabled={isSubmitting}
+      />
     </EntityCreatePage>
   );
 }

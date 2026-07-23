@@ -1,17 +1,7 @@
-import express from "express";
-import cors from "cors";
+import { app } from "./app.js";
+import { env } from "./config/env.js";
+import { logger } from "./lib/logger.js";
 
-import helloRouter from "./routes/hello.routes.js";
-
-const app = express();
-
-const PORT = process.env.PORT ?? 5000;
-
-app.use(cors());
-app.use(express.json());
-
-app.use("/api/hello", helloRouter);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(env.PORT, () => {
+  logger.info({ port: env.PORT }, "Server started");
 });
